@@ -14,7 +14,7 @@ import { SettingsComponent } from './settings/settings.component';
 import { AdminInfoComponent } from './admin-info/admin-info.component';
 import { MulselectComponent } from './mulselect/mulselect.component';
 import { UserRolesComponent } from './user-roles/user-roles.component';
-import { AddUserComponent } from './add-user/add-user.component';
+import { AddUserComponent } from './add-role/add-role.component';
 
 export const routes: Routes = [
     {
@@ -83,7 +83,7 @@ export const routes: Routes = [
         canActivate:[authGuard]
     },
     {
-        path:'add-user',
+        path:'add-role',
         component:AddUserComponent,
         canActivate:[authGuard]
     },

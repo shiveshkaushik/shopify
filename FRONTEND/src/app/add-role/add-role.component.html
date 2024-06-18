@@ -1,0 +1,19 @@
+<body>
+    <div class="wrapper" [ngClass]="formstatus">
+      <h2>Add User</h2>
+      <form action="" [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+        <div class="input-box">
+          <input type="text" placeholder="Enter role name" formControlName="name">
+          @if(myFormControl.name.dirty || submitted){
+            @if(myFormControl.name.errors?.required){
+          <small>*Name is Required</small>
+            }
+          }
+        </div>
+        <div class="input-box button">
+          <input type="submit" value="Add Role">
+        </div>
+      </form>
+    </div>
+    <button (click)="this.router.navigate(['/users'])">Go Back</button>
+  </body>

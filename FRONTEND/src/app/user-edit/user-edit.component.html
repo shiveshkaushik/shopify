@@ -1,16 +1,17 @@
-<div class="drop-container">
-    <form [formGroup]="form">
-        <br>
+<div class="drop-container" *ngIf="form">
+  <form [formGroup]="form">
       <ng-multiselect-dropdown
-        formControlName="role"
-        [placeholder]="'Select Role'"
-        [settings]="dropdownSettings"
-        [data]="dropdownList"
-        (onSelect)="onRoleSelect($event)"
+          formControlName="role"
+          [placeholder]="'Select Role'"
+          [settings]="dropdownSettings"
+          [data]="dropdownList"
+          (onSelect)="onRoleSelect($event)"
+          [(ngModel)]="selectedItems"
       >
       </ng-multiselect-dropdown>
-    </form>
-    <div class="action">
+  </form>
+  <div class="action">
       <button (click)="handleButtonClick()">Save Changes</button>
-    </div>
+      <button (click)="cancel()">Cancel</button>
+  </div>
 </div>

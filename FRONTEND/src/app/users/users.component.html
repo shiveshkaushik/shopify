@@ -1,42 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>User List</title>
+    <title>Role List</title>
 </head>
 <body>
-    <h1>User List</h1>
+    <h1>Role List</h1>
+    <div>
+      <button (click)="this.router.navigate(['/add-role'])">Add Role</button>
+  </div>
     <div class="grid-container">
     </div>
     <table>
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          @if(superControl){
-          <th>Actions</th>
-          }
+          <th>Role Name</th>
+          <th>Role Access</th>
+          <th *ngIf="superControl">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let user of users">
           <td>{{ user.name }}</td>
-          <td>{{ user.email }}</td>
-          @if(superControl){
-          <td>
+          <td>{{ user.roleAccess }}</td>
+          <td *ngIf="superControl">
             <button (click)="showEditModal(user)">Edit</button>
-            <button>Delete</button>
+            <button (click)="onDeleteUser(user)">Delete</button>
           </td>
-        }
         </tr>
       </tbody>
     </table>
-    @if(selectedUser){
-    <ng-container>
+
+    <ng-container *ngIf="selectedUser">
         <div class="user-card">
             <h3>{{selectedUser?.name}}</h3>
-            <app-user-edit [user]="selectedUser"></app-user-edit>
+            <app-user-edit [user]="selectedUser" (cancelEdit)="cancelEdit()"></app-user-edit>
         </div>
     </ng-container>
-}
 </body>
 </html>

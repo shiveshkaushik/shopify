@@ -7,40 +7,52 @@
     </div>
 
     <ul class="sidebar-list">
+        @if(showDashboard||this.flag){
         <li class="sidebar-list-item">
             <a routerLink="/dashboard">
                 <span class="material-icons-outlined">dashboard</span> Dashboard
             </a>
         </li>
+    }
+    @if(showProduct||flag){
         <li class="sidebar-list-item">
             <a routerLink="/products">
                 <span class="material-icons-outlined">inventory_2</span> Products
             </a>
         </li>
-        <li class="sidebar-list-item">
-            <a routerLink="/users">
-                <span class="material-icons-outlined">fact_check</span>User Permissions
-            </a>
-        </li>
+    }
+    @if(showPurchase||flag){
         <li class="sidebar-list-item">
             <a routerLink="/purchases">
                 <span class="material-icons-outlined">add_shopping_cart</span> Purchase Orders
             </a>
         </li>
-        <li class="sidebar-list-item">
-            <a routerLink="/user-roles">
-                <span class="material-icons-outlined">fact_check</span>User Roles
-            </a>
-        </li>
+    }
+    @if(showReport || flag){
         <li class="sidebar-list-item">
             <a routerLink="/reviews">
                 <span class="material-icons-outlined">poll</span> Reports
             </a>
         </li>
+    }
         <li class="sidebar-list-item">
             <a routerLink="/changepassword">
                 <span class="material-icons-outlined">settings</span> Settings
             </a>
         </li>
+        @if(flag || showRolePermission){
+        <li class="sidebar-list-item">
+            <a routerLink="/users">
+                <span class="material-icons-outlined">fact_check</span>Role Permissions
+            </a>
+        </li>
+    }
+        @if(flag || showUserRoles){
+        <li class="sidebar-list-item">
+            <a routerLink="/user-roles">
+                <span class="material-icons-outlined">fact_check</span>User Roles
+            </a>
+        </li>
+    }
     </ul>
 </aside>

@@ -50,6 +50,7 @@ export class HttpClientService {
       } else {
         const errorMessage = error.response.data || error.message;
         this.toastr.error(errorMessage, 'Error!');
+        this.router.navigate(['/dashboard']);
       }
     }
 }

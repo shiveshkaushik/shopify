@@ -6,12 +6,13 @@ import { RouterModule } from "@angular/router";
 import { CommonModule } from '@angular/common';
 import { HttpClientService } from '../services/httpclient.service';
 import { registration } from "../config/ApiConstants";
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-add-user',
   standalone: true,
   imports: [ReactiveFormsModule, FormsModule, CommonModule, RouterModule],
-  templateUrl: './add-user.component.html',
-  styleUrl: './add-user.component.css'
+  templateUrl: './add-role.component.html',
+  styleUrl: './add-role.component.css'
 })
 export class AddUserComponent implements OnInit {
   registrationForm !: FormGroup;
@@ -19,17 +20,11 @@ export class AddUserComponent implements OnInit {
   formstatus: string = '';
 
 
-  constructor(private fb: FormBuilder, private customValidator: CustomValidationService, private httpService: HttpClientService) { };
+  constructor(private fb: FormBuilder, private customValidator: CustomValidationService, private httpService: HttpClientService,public router:Router) { };
 
   ngOnInit(): void {
     this.registrationForm = this.fb.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      role: ['', Validators.required],
-      password: ['', Validators.required, this.customValidator.passwordValidator()],
-      cfpassword: ['', Validators.required],
-    }, {
-      validator: this.customValidator.MatchPassword('password', 'cfpassword')
     })
 
     this.registrationForm.statusChanges.subscribe((status) => {
@@ -47,7 +42,7 @@ export class AddUserComponent implements OnInit {
     this.submitted = true;
     if (this.registrationForm.valid) {
       let formValue = this.registrationForm.value;
-      this.httpService.PostRequest(registration, formValue)
+      this.httpService.PostRequest('/add-role', formValue)
         .then((data: any) => {
           if (data) {
             console.log("Success-->", data);
