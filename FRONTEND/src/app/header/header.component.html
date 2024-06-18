@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+      <div class="menu-icon" onclick="openSidebar()">
+        <span class="material-icons-outlined">menu</span>
+      </div>
+      <div class="header-left">
+        <span class="material-icons-outlined">search</span>
+      </div>
+      <div class="header-right">
+        <div class="dropdown">
+          <span class="material-icons-outlined" id="accountBtn">account_circle</span>
+          <div class="dropdown-content" id="myDropdown">
+            <a routerLink="/admin-info">Admin Info</a>
+            <button (click)="logout()">Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+</body>
+</html>
+  

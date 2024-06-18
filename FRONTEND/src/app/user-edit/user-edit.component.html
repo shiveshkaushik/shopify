@@ -1,0 +1,16 @@
+<div class="drop-container">
+    <form [formGroup]="form">
+        <br>
+      <ng-multiselect-dropdown
+        formControlName="role"
+        [placeholder]="'Select Role'"
+        [settings]="dropdownSettings"
+        [data]="dropdownList"
+        (onSelect)="onRoleSelect($event)"
+      >
+      </ng-multiselect-dropdown>
+    </form>
+    <div class="action">
+      <button (click)="handleButtonClick()">Save Changes</button>
+    </div>
+</div>

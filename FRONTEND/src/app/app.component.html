@@ -1,0 +1,13 @@
+<mat-drawer-container>
+  @if(showNavbar){
+  <mat-drawer mode="side" opened>
+    <app-navbar></app-navbar>
+  </mat-drawer>
+}
+  <mat-drawer-content>
+    @if(showNavbar){
+    <app-header></app-header>
+    }
+    <router-outlet></router-outlet>
+  </mat-drawer-content>
+</mat-drawer-container>

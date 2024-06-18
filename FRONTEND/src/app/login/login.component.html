@@ -1,0 +1,36 @@
+
+<body>
+  <div class="wrapper" [ngClass]="formstatus">
+    <h2>Login</h2>
+    <form action="#" [formGroup]="myloginForm" (ngSubmit)="onSubmit()">
+      <div class="input-box">
+        <input type="text" placeholder="Enter registered email" formControlName="email">
+        @if(myFormControl.email.dirty || submitted)
+        {
+        <div>
+          @if(myFormControl.email.errors?.required){
+          <small>*Email is Required</small>
+          }
+          @if(myFormControl.email.errors?.email){
+          <small>*Email should be Valid</small>
+          }
+        </div>
+        }
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Enter password" formControlName="password">
+        @if(myFormControl.password.dirty || submitted){
+          @if(myFormControl.password.errors?.required){
+        <small>*password is required</small>
+          }
+        }
+      </div>
+      <div class="input-box button">
+        <input type="Submit" value="Login">
+      </div>
+      <div class="text">
+        <h3>Don't have an account? <a href="#" routerLink="/register">Register now</a></h3>
+      </div>
+    </form>
+  </div>
+</body>

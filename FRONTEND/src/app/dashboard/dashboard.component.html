@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3>Welcome {{userName}}</h3>
+    <section class="main-content">
+        <div class="dashboard">
+            <h2 class="heading"> Dashboard </h2>
+            <div class="color-box">
+                <div class="box skyblue">
+                    <p> <i class="fa-solid fa-thumbs-up"></i> </p>
+                    <p> Total Sales </p>
+                    <h3> 50,120$ </h3>
+                </div>
+                <div class="box yellow">
+                    <p><i class="fa-solid fa-comment"></i></p>
+                    <p> Orders Placed </p>
+                    <h3> 700 </h3>
+                </div>
+                <div class="box purple">
+                    <p> <i class="fa-solid fa-share"></i></p>
+                    <p> Successful Deliveries </p>
+                    <h3> 550 </h3>
+                </div>
+                <div class="box red">
+                    <p> <i class="fa-sharp fa-solid fa-floppy-disk"></i> </p>
+                    <p> In-Transit </p>
+                    <h3> 120 </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="activity">
+            <h2 class="heading">Recent Orders Placed</h2>
+            <div class="activities">
+                <table>
+                    <thead>
+                        <tr>
+                            <th> Email </th>
+                            <th> Date </th>
+                            <th> Time </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let log of showAll ? dashboardData : (dashboardData?.slice(0, initialItemsToShow) || []); let i = index">
+                            <td>{{log.email}}</td>
+                            <td>{{convertDate(log.loginTime).date}}</td>
+                            <td>{{convertDate(log.loginTime).time}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                @if((dashboardData?.length || 0) > initialItemsToShow){
+                <div class="btn">
+                    <button (click)="toggleShowAll()">{{ showAll ? 'Show Less' : 'Show More' }}</button>
+                  </div>
+                }
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

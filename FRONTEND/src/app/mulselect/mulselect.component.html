@@ -1,0 +1,17 @@
+
+    <div class="drop-container">
+      <form [formGroup]="form">
+        <ng-multiselect-dropdown
+          formControlName="grocery"
+          [placeholder]="'Fruits/Vegetables'"
+          [settings]="dropdownSettings"
+          [data]="dropdownList"
+          (onSelect)="onItemSelect($event)"
+        >
+        </ng-multiselect-dropdown>
+      </form>
+      <div class="action">
+        <button (click)="handleButtonClick()">Press button</button>
+      </div>
+    </div>
+    <button (click)="getData()">Click me to get data</button>

@@ -1,0 +1,105 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f5f5f5;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.settings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-gap: 30px;
+}
+
+.setting-section {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.setting-section h2 {
+  margin-top: 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.setting-section h2 i {
+  margin-right: 10px;
+  color: #666;
+}
+
+.setting-item {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+textarea {
+  height: 100px;
+}
+
+.checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.checkboxes div {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.checkboxes div input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.button-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.save-button {
+  padding: 12px 24px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-button i {
+  margin-right: 8px;
+}
+
+.save-button:hover {
+  background-color: #45a049;
+}
