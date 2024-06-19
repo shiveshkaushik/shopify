@@ -2,6 +2,7 @@ const register = require('../model/AuthModel');
 const log = require('../model/LogModel');
 const sesModel = require('../model/SessionModel');
 const perModel = require('../model/PermissionModel');
+const permissionCheckModel = require('../model/PermissionCheckboxModel');
 const jwt = require('jsonwebtoken');
 const changedThePassword = require('../actions/activity');
 require('dotenv').config();
@@ -58,6 +59,10 @@ const PostLogin = async (req, res) => {
             return res.status(404).send('You have not been Authorised yet.\nPlease wait for Admin');
         }
 
+        const userRole = logUser.role;
+        const rolePerms = await perModel.findOne({name:userRole});
+        const perms = rolePerms.roleAccess;
+
         const isMatched = await comparePassword(password, logUser.password);
         if (!isMatched) {
             return res.status(400).send('Invalid Credentials');
@@ -71,7 +76,7 @@ const PostLogin = async (req, res) => {
         let updated = new Date(created).getTime();
         const sessionofUser = await sesModel.create({ userId: existUserID, email: userEmail, token: token, createdAt: created, updatedAt: updated })
         const logofUser = await log.create({ userId: existUserID, email: userEmail, loginTime: loginTime, actions: [] });
-        res.status(200).json({ token: token, email: userEmail });
+        res.status(200).json({ token: token, email: userEmail,permissions:perms});
     } catch (error) {
         console.error("Error while finding user:", error);
         return res.status(500).send('Server Error');
@@ -119,6 +124,7 @@ const PostRegister = async (req, res) => {
 
 const getDashboard = async (req, res) => {
     try {
+        console.log(req.body);
         const authHeader = req.headers && req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         const decodedToken = jwt.decode(token);
@@ -221,7 +227,8 @@ const getAdminDetails = async (req, res) => {
         if (loggedUser.superAdmin) {
             superControl = true;
         };
-        res.status(200).json({ admins: userAdmins, control: superControl });
+        const allRoles = await perModel.find({ name: { $ne: 'SuperAdmin' } });
+        res.status(200).json({ admins: userAdmins, control: superControl,roles : allRoles });
     }else{
         res.status(500).send('Not Allowed');
     }
@@ -295,7 +302,6 @@ const changeUserRole = async (req, res) => {
 
 const getRolePermissions = async (req, res) => {
     try {
-        const userPerms = await perModel.find();
         const authHeader = req.headers && req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         const decodedToken = jwt.decode(token);
@@ -306,7 +312,8 @@ const getRolePermissions = async (req, res) => {
         }
         const perms = await perModel.findOne({ name: userRole });
         if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
-        const userEmail = decodedToken.email;
+            const userPerms = await perModel.find({ name: { $ne: 'SuperAdmin' } });
+            const userEmail = decodedToken.email;
         const loggedUser = await register.findOne({ email: userEmail });
         let superControl = false;
         if (loggedUser.superAdmin) {
@@ -401,4 +408,25 @@ const addRole = async (req, res) => {
 }
 
 
-module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole };
+const getPermissionCheckBox = async(req,res) => {
+    try{
+        const perms = await permissionCheckModel.find();
+        res.status(200).send({perms:perms});
+    }catch(err)
+    {
+        console.log(err);
+        res.status(500).send('Interal Server Error');
+    }
+}
+
+const postPermissionCheckbox = async(req,res) =>{
+    try{
+
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Interal Server Error');
+    }
+}
+
+
+module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole,getPermissionCheckBox,postPermissionCheckbox };

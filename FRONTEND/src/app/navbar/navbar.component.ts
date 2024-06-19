@@ -12,7 +12,6 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class NavbarComponent {
   userName: string = 'Username';
-  perms: string[] = [];
   flag : boolean = false;
   showDashboard : boolean = false;
   showProduct : boolean = false;
@@ -28,20 +27,15 @@ export class NavbarComponent {
     if (!token) {
       this.router.navigate(['/login']);
     } else {
-      this.httpService.GetRequest('/navbar-permission').then((data: any) => {
-        if (data) {
-          console.log('Success', data);
-          this.perms = data.access || [];
-          this.flag = data.control;
-          console.log(this.flag);
-          this.showDashboard = this.perms.includes('Dashboard');
-          this.showProduct = this.perms.includes('Products');
-          this.showPurchase = this.perms.includes('Purchase');
-          this.showReport = this.perms.includes('Reports');
-          this.showRolePermission = this.perms.includes('RolePermission');
-          this.showUserRoles = this.perms.includes('UserRoles');
-        }
-      });
+          let perms = localStorage.getItem('perms');
+          if(perms){
+          this.showDashboard = perms.includes('Dashboard');
+          this.showProduct = perms.includes('Products');
+          this.showPurchase = perms.includes('Purchase');
+          this.showReport = perms.includes('Reports');
+          this.showRolePermission = perms.includes('RolePermission');
+          this.showUserRoles = perms.includes('UserRoles');
+          }
+        };
     }
   }
-}

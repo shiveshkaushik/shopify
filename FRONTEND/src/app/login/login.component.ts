@@ -1,4 +1,4 @@
-import { Component,OnDestroy,OnInit } from '@angular/core';
+import { Component,OnInit } from '@angular/core';
 import { FormBuilder,ReactiveFormsModule,FormsModule, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from "@angular/router";
@@ -15,7 +15,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './login.component.css'
 })
 
-export class LoginComponent implements OnInit,OnDestroy {
+export class LoginComponent implements OnInit {
   myloginForm !: FormGroup;
   submitted : boolean = false;
   formstatus : string = '';
@@ -33,9 +33,6 @@ export class LoginComponent implements OnInit,OnDestroy {
       this.formstatus = status;
     })
 
-  }
-
-  ngOnDestroy(): void {
   }
   
   get myFormControl()
@@ -55,7 +52,8 @@ export class LoginComponent implements OnInit,OnDestroy {
             {
               console.log('Success',data);
               localStorage.setItem('angulartoken',data.token);
-              localStorage.setItem('useremail',data.email)
+              localStorage.setItem('useremail',data.email);
+              localStorage.setItem('perms',data.permissions);
               this.myloginForm.reset();
               this.submitted = false;
               this.router.navigate(['/dashboard']);

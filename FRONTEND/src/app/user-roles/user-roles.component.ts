@@ -18,6 +18,7 @@ export class UserRolesComponent implements OnInit {
   superControl: boolean = false;
   editRoleForm: FormGroup;
   selectedUser: any;
+  roles : any;
 
   constructor(
     public router: Router,
@@ -40,6 +41,7 @@ export class UserRolesComponent implements OnInit {
             this.userData = data;
             this.users = data.admins;
             this.superControl = data.control;
+            this.roles = data.roles;
           }
         });
     } else {

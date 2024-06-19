@@ -1,0 +1,27 @@
+<div>
+    <h2>Page Permission</h2>
+    <form [formGroup]="permissionsForm" (ngSubmit)="onSubmit()">
+      <table>
+        <thead>
+          <tr>
+            <th>PageName</th>
+            <th>List</th>
+            <th>Add</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="pages">
+          <tr *ngFor="let page of pages.controls; let i = index" [formGroupName]="i">
+            <td><input formControlName="pageName" type="text"></td>
+            <td><input formControlName="list" type="checkbox"></td>
+            <td><input formControlName="add" type="checkbox"></td>
+            <td><input formControlName="edit" type="checkbox"></td>
+            <td><input formControlName="delete" type="checkbox"></td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+  

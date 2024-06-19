@@ -11,23 +11,10 @@ export class HttpClientService {
 
   constructor(public toastr: ToastrService,private router:Router) { }
 
-  private getToken(): string | null {
-    return localStorage.getItem('angulartoken');
-  }
-
-  private getAuthHeaders() {
-    const token = this.getToken();
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    };
-  }
-
   PostRequest = async (endPoint: any, formValue: any) => {
     const url = `${baseUrl}${endPoint}`;
     try {
-      const response = await axios.post<any>(url, formValue, this.getAuthHeaders());
+      const response = await axios.post<any>(url, formValue);
       this.toastr.success('Success');
       return response.data;
     } catch (error: any) {
@@ -40,7 +27,7 @@ export class HttpClientService {
   GetRequest = async (endPoint: any) => {
     const url = `${baseUrl}${endPoint}`;
     try {
-      const response = await axios.get(url, this.getAuthHeaders());
+      const response = await axios.get(url);
       return response.data;
     } catch (error: any) {
       if (error.response && error.response.status === 403 && error.response.data.message === 'Token invalid or expired') {

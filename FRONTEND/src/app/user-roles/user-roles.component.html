@@ -29,19 +29,17 @@
 
     <div *ngIf="selectedUser" class="modal">
         <div class="modal-content">
-            <h2>Edit Role for {{ selectedUser.name }}</h2>
-            <form [formGroup]="editRoleForm" (ngSubmit)="onSubmit()">
-                <label for="role">Select Role:</label>
-                <select id="role" formControlName="role">
-                    <option value="Admin">Admin</option>
-                    <option value="Technical">Technical</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Support">Support</option>
-                </select>
-                <button type="submit" [disabled]="editRoleForm.invalid">Save</button>
-                <button type="button" (click)="cancelEdit()">Cancel</button>
-            </form>
+          <h2>Edit Role for {{ selectedUser.name }}</h2>
+          <form [formGroup]="editRoleForm" (ngSubmit)="onSubmit()">
+            <label for="role">Select Role:</label>
+            <select id="role" formControlName="role">
+              <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
+            </select>
+            <button type="submit" [disabled]="editRoleForm.invalid">Save</button>
+            <button type="button" (click)="cancelEdit()">Cancel</button>
+          </form>
         </div>
-    </div>
+      </div>
+      
 </body>
 </html>

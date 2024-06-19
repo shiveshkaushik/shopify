@@ -15,6 +15,7 @@ import { AdminInfoComponent } from './admin-info/admin-info.component';
 import { MulselectComponent } from './mulselect/mulselect.component';
 import { UserRolesComponent } from './user-roles/user-roles.component';
 import { AddUserComponent } from './add-role/add-role.component';
+import { PagePermissionsComponent } from './page-permissions/page-permissions.component';
 
 export const routes: Routes = [
     {
@@ -85,6 +86,11 @@ export const routes: Routes = [
     {
         path:'add-role',
         component:AddUserComponent,
+        canActivate:[authGuard]
+    },
+    {
+        path:'page-permission',
+        component:PagePermissionsComponent,
         canActivate:[authGuard]
     },
     {
