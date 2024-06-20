@@ -8,6 +8,11 @@ const changedThePassword = require('../actions/activity');
 require('dotenv').config();
 const secret = process.env.JWT_SECRET;
 const bcrypt = require('bcryptjs');
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+const accessKey = process.env.ACCESS_KEY;
+const secretAccessKey = process.env.SECRET_ACCESS_KEY;
 
 const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10);
@@ -16,6 +21,7 @@ const hashPassword = async (password) => {
 const comparePassword = async (plainPassword, hashedPassword) => {
     return await bcrypt.compare(plainPassword, hashedPassword);
 };
+
 
 const generateToken = (user) => {
     const payload = {
@@ -60,7 +66,7 @@ const PostLogin = async (req, res) => {
         }
 
         const userRole = logUser.role;
-        const rolePerms = await perModel.findOne({name:userRole});
+        const rolePerms = await perModel.findOne({ name: userRole });
         const perms = rolePerms.roleAccess;
 
         const isMatched = await comparePassword(password, logUser.password);
@@ -76,7 +82,7 @@ const PostLogin = async (req, res) => {
         let updated = new Date(created).getTime();
         const sessionofUser = await sesModel.create({ userId: existUserID, email: userEmail, token: token, createdAt: created, updatedAt: updated })
         const logofUser = await log.create({ userId: existUserID, email: userEmail, loginTime: loginTime, actions: [] });
-        res.status(200).json({ token: token, email: userEmail,permissions:perms});
+        res.status(200).json({ token: token, email: userEmail, permissions: perms });
     } catch (error) {
         console.error("Error while finding user:", error);
         return res.status(500).send('Server Error');
@@ -124,17 +130,16 @@ const PostRegister = async (req, res) => {
 
 const getDashboard = async (req, res) => {
     try {
-        console.log(req.body);
         const authHeader = req.headers && req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
         let flag = false;
-        if(userRole == 'SuperAdmin'){
+        if (userRole == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('Dashboard')) || flag===true) {
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('Dashboard')) || flag === true) {
             const userEmail = decodedToken.email;
             const loggedUser = await register.findOne({ email: userEmail });
             if (loggedUser) {
@@ -216,22 +221,22 @@ const getAdminDetails = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
         let flag = false;
-        if(userRole == 'SuperAdmin'){
+        if (userRole == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
-        const userEmail = decodedToken.email;
-        const loggedUser = await register.findOne({ email: userEmail });
-        let superControl = false;
-        if (loggedUser.superAdmin) {
-            superControl = true;
-        };
-        const allRoles = await perModel.find({ name: { $ne: 'SuperAdmin' } });
-        res.status(200).json({ admins: userAdmins, control: superControl,roles : allRoles });
-    }else{
-        res.status(500).send('Not Allowed');
-    }
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
+            const userEmail = decodedToken.email;
+            const loggedUser = await register.findOne({ email: userEmail });
+            let superControl = false;
+            if (loggedUser.superAdmin) {
+                superControl = true;
+            };
+            const allRoles = await perModel.find({ name: { $ne: 'SuperAdmin' } });
+            res.status(200).json({ admins: userAdmins, control: superControl, roles: allRoles });
+        } else {
+            res.status(500).send('Not Allowed');
+        }
     }
     catch (err) {
         console.error('Error while getting users:', err);
@@ -249,24 +254,24 @@ const editRoleUser = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
         let flag = false;
-        if(userRole == 'SuperAdmin'){
+        if (userRole == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
-        const { formdata: userRole, userEmail: userEmail } = req.body;
-        let updatedRole = [];
-        userRole.role.forEach(element => {
-            updatedRole.push(element.item_text);
-        });
-        console.log(updatedRole);
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
+            const { formdata: userRole, userEmail: userEmail } = req.body;
+            let updatedRole = [];
+            userRole.role.forEach(element => {
+                updatedRole.push(element.item_text);
+            });
+            console.log(updatedRole);
 
-        const user = await register.findOneAndUpdate({ email: userEmail }, { roleAccess: updatedRole });
-        res.status(200).send('Roles Updated');
-    }
-    else{
-        res.status(500).send('Not Allowed');
-    }
+            const user = await register.findOneAndUpdate({ email: userEmail }, { roleAccess: updatedRole });
+            res.status(200).send('Roles Updated');
+        }
+        else {
+            res.status(500).send('Not Allowed');
+        }
     } catch (err) {
         console.error('Error while updating roles', err);
         res.status(500).send('Internal Server Error');
@@ -280,17 +285,17 @@ const changeUserRole = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userRoles = decodedToken.role;
         let flag = false;
-        if(userRoles == 'SuperAdmin'){
+        if (userRoles == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRoles });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
-        const { email: userEmail, role: userRole } = req.body;
-        const user = await register.findOneAndUpdate({ email: userEmail }, { role: userRole });
-        console.log(user);
-        res.status(200).send('Roles Updated');
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
+            const { email: userEmail, role: userRole } = req.body;
+            const user = await register.findOneAndUpdate({ email: userEmail }, { role: userRole });
+            console.log(user);
+            res.status(200).send('Roles Updated');
         }
-        else{
+        else {
             res.status(500).send('Not Allowed');
         }
     } catch (err) {
@@ -307,22 +312,22 @@ const getRolePermissions = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
         let flag = false;
-        if(userRole == 'SuperAdmin'){
+        if (userRole == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
             const userPerms = await perModel.find({ name: { $ne: 'SuperAdmin' } });
             const userEmail = decodedToken.email;
-        const loggedUser = await register.findOne({ email: userEmail });
-        let superControl = false;
-        if (loggedUser.superAdmin) {
-            superControl = true;
-        };
-        res.status(200).json({ permissions: userPerms, control: superControl })
-    }else{
-        res.status(500).send('Not Allowed');
-    }
+            const loggedUser = await register.findOne({ email: userEmail });
+            let superControl = false;
+            if (loggedUser.superAdmin) {
+                superControl = true;
+            };
+            res.status(200).json({ permissions: userPerms, control: superControl })
+        } else {
+            res.status(500).send('Not Allowed');
+        }
     } catch (err) {
         console.log(err);
         res.status(500).send('Internal Server Error');
@@ -337,17 +342,17 @@ const editRolePermission = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
         let flag = false;
-        if(userRole == 'SuperAdmin'){
+        if (userRole == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
-        const { formdata, roleName } = req.body;
-        const roleAccess = formdata.role.map(item => item.item_text);
-        console.log(roleAccess);
-        await perModel.findOneAndUpdate({ name: roleName }, { roleAccess: roleAccess });
-        res.status(200).send('Role permissions updated successfully');
-        }else{
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
+            const { formdata, roleName } = req.body;
+            const roleAccess = formdata.role.map(item => item.item_text);
+            console.log(roleAccess);
+            await perModel.findOneAndUpdate({ name: roleName }, { roleAccess: roleAccess });
+            res.status(200).send('Role permissions updated successfully');
+        } else {
             res.status(500).send('Not Allowed');
         }
     } catch (err) {
@@ -384,22 +389,22 @@ const addRole = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
         let flag = false;
-        if(userRole == 'SuperAdmin'){
+        if (userRole == 'SuperAdmin') {
             flag = true;
         }
         const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag===true) {
-        const { name: name } = req.body;
-        const checkRole = await perModel.findOne({ name: name });
-        if (!checkRole) {
-            await perModel.create({ name: name, roleAccess: [] });
-            return res.status(200).send('Role Created');
-        }
+        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
+            const { name: name } = req.body;
+            const checkRole = await perModel.findOne({ name: name });
+            if (!checkRole) {
+                await perModel.create({ name: name, roleAccess: [] });
+                return res.status(200).send('Role Created');
+            }
 
-        return res.status(500).send('Role already Exists');
-    }else{
-        res.status(500).send('Not Allowed');
-    }
+            return res.status(500).send('Role already Exists');
+        } else {
+            res.status(500).send('Not Allowed');
+        }
 
     } catch (err) {
         console.log(err);
@@ -408,25 +413,75 @@ const addRole = async (req, res) => {
 }
 
 
-const getPermissionCheckBox = async(req,res) => {
-    try{
+const getPermissionCheckBox = async (req, res) => {
+    try {
         const perms = await permissionCheckModel.find();
-        res.status(200).send({perms:perms});
-    }catch(err)
-    {
+        res.status(200).send({ perms: perms });
+    } catch (err) {
         console.log(err);
         res.status(500).send('Interal Server Error');
     }
 }
 
-const postPermissionCheckbox = async(req,res) =>{
-    try{
+const postPermissionCheckbox = async (req, res) => {
+    try {
 
-    }catch(err){
+    } catch (err) {
         console.log(err);
         res.status(500).send('Interal Server Error');
     }
 }
 
+const getAdminInfo = async (req, res) => {
+    try {
+        const authHeader = req.headers && req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        const decodedToken = jwt.decode(token);
+        const userEmail = decodedToken.email;
+        const role = decodedToken.role;
+        const loggedUser = await register.findOne({ email: userEmail });
+        if (loggedUser) {
+            const name = loggedUser.name;
+            let data = { email: userEmail, name: name, role: role };
+            res.status(200).json(data);
+        }
+        else {
+            res.status(404).send('User not found');
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+    }
+}
 
-module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole,getPermissionCheckBox,postPermissionCheckbox };
+const s3 = new S3Client({
+    credentials: {
+        accessKeyId: accessKey,
+        secretAccessKey: secretAccessKey,
+    },
+    region: bucketRegion,
+});
+
+const postAdminInfo = async (req, res) => {
+    try {
+        const timestamp = Date.now();
+        const extension = req.file.originalname.split('.').pop();
+        const filenameWithTimestamp = `${req.file.originalname}-${timestamp}.${extension}`;
+        const params = {
+            Bucket: bucketName,
+            Key: filenameWithTimestamp,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype
+        }
+        const command = new PutObjectCommand(params);
+        const result = await s3.send(command);
+        res.status(200).send('Req received');
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+
+
+module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo };

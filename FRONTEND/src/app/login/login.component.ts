@@ -27,11 +27,12 @@ export class LoginComponent implements OnInit {
             this.myloginForm = this.fb.group({
       email:['',[Validators.required,Validators.email]],
       password:['',Validators.required]
-    })
+    }) 
 
     this.myloginForm.statusChanges.subscribe((status)=>{
       this.formstatus = status;
     })
+    //this.httpService.httpRequest();
 
   }
   

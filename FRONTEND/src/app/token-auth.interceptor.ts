@@ -2,7 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 export const tokenAuthInterceptor: HttpInterceptorFn = (req, next) => {
   let token = localStorage.getItem('angulartoken');
-  console.log("HTTP Request intec")
+  console.log("HTTP Request intec---")
   if(token){
     req = req.clone({
       setHeaders:{
