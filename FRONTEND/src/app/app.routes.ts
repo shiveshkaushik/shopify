@@ -16,6 +16,7 @@ import { MulselectComponent } from './mulselect/mulselect.component';
 import { UserRolesComponent } from './user-roles/user-roles.component';
 import { AddUserComponent } from './add-role/add-role.component';
 import { PagePermissionsComponent } from './page-permissions/page-permissions.component';
+import { EditPermissionComponent } from './page-permission/edit-permission/edit-permission.component';
 
 export const routes: Routes = [
     {
@@ -91,6 +92,11 @@ export const routes: Routes = [
     {
         path:'page-permission',
         component:PagePermissionsComponent,
+        canActivate:[authGuard]
+    },
+    {
+        path:'page-permission/edit-permission',
+        component:EditPermissionComponent,
         canActivate:[authGuard]
     },
     {

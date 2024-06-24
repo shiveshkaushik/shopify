@@ -3,6 +3,7 @@ const log = require('../model/LogModel');
 const sesModel = require('../model/SessionModel');
 const perModel = require('../model/PermissionModel');
 const permissionCheckModel = require('../model/PermissionCheckboxModel');
+const pageModel = require('../model/PagePermissionModel');
 const jwt = require('jsonwebtoken');
 const changedThePassword = require('../actions/activity');
 require('dotenv').config();
@@ -15,6 +16,8 @@ const bucketRegion = process.env.BUCKET_REGION;
 const accessKey = process.env.ACCESS_KEY;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY;
 const sharp = require('sharp');
+
+let PageList = ['DashBoard','Product','Reports','Purchase','Role-Permission','User-Roles']
 
 const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10);
@@ -84,6 +87,7 @@ const PostLogin = async (req, res) => {
         let updated = new Date(created).getTime();
         const sessionofUser = await sesModel.create({ userId: existUserID, email: userEmail, token: token, createdAt: created, updatedAt: updated })
         const logofUser = await log.create({ userId: existUserID, email: userEmail, loginTime: loginTime, actions: [] });
+
         res.status(200).json({ token: token, email: userEmail, permissions: perms });
     } catch (error) {
         console.error("Error while finding user:", error);
@@ -384,6 +388,15 @@ const getNavbarPermission = async (req, res) => {
     }
 }
 
+const getAddRole = async(req,res) => {
+    try{
+        res.status(200).send({page:PageList});
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
 const addRole = async (req, res) => {
     try {
         const authHeader = req.headers && req.headers['authorization'];
@@ -394,15 +407,48 @@ const addRole = async (req, res) => {
         if (userRole == 'SuperAdmin') {
             flag = true;
         }
+        let l,a,e,v;
+        let myperm = [];
         const perms = await perModel.findOne({ name: userRole });
         if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
-            const { name: name } = req.body;
-            const checkRole = await perModel.findOne({ name: name });
+            const { role: name } = req.body;
+            const checkRole = await pageModel.findOne({ role: name });
             if (!checkRole) {
-                await perModel.create({ name: name, roleAccess: [] });
+                let {name,permissions} = req.body;
+                permissions.forEach(perm => {
+                    let main = perm.page;
+                    l = perm.list;
+                    a = perm.add;
+                    e = perm.edit;
+                    v = perm.view;
+                    let obj = {
+                        page:main,
+                        list:{type:'list',
+                            title: 'List',
+                            status: l,
+                            url:`/${main}/list`
+                        },
+                        add:{type:'add',
+                            title: 'Add',
+                            status: a,
+                            url:`/${main}/add`
+                        },
+                        edit:{type:'edit',
+                            title: 'Edit',
+                            status: e,
+                            url:`/${main}/edit`
+                        },
+                        view:{type:'view',
+                            title: 'View',
+                            status: v,
+                            url:`/${main}/view`
+                        }
+                } 
+                myperm.push(obj);
+                })
+                await pageModel.create({role:name,permission:myperm,editMode:false});
                 return res.status(200).send('Role Created');
             }
-
             return res.status(500).send('Role already Exists');
         } else {
             res.status(500).send('Not Allowed');
@@ -417,8 +463,8 @@ const addRole = async (req, res) => {
 
 const getPermissionCheckBox = async (req, res) => {
     try {
-        const perms = await permissionCheckModel.find();
-        res.status(200).send({ perms: perms });
+        const allPerms = await pageModel.find();
+        res.status(200).send({data:allPerms});
     } catch (err) {
         console.log(err);
         res.status(500).send('Interal Server Error');
@@ -427,7 +473,9 @@ const getPermissionCheckBox = async (req, res) => {
 
 const postPermissionCheckbox = async (req, res) => {
     try {
-
+        const {name,data} = req.body;
+        const result = await pageModel.findOneAndUpdate({role:name},{permission:data});
+        res.status(200).send('Req Accepted');
     } catch (err) {
         console.log(err);
         res.status(500).send('Interal Server Error');
@@ -442,10 +490,11 @@ const getAdminInfo = async (req, res) => {
         const userEmail = decodedToken.email;
         const role = decodedToken.role;
         const loggedUser = await register.findOne({ email: userEmail });
+        console.log(loggedUser.image)
         if (loggedUser) {
-            let defaultKey = 'default-51cc176f62c7f627f3c63881a0cc7267 e3e23301944ebe557f37c111bb2cb508 476575b147ae24377dd0ad7e8c7d70e6 9851677f02908682144dff62e676c8dd c47cdee7660e19ff11a1292a514d392d.jpeg';
-            if (loggedUser.image === 'default' && !(loggedUser.imageFlag)) {
-                loggedUser.image = defaultKey;
+            if (loggedUser.image === 'default.png' && !(loggedUser.imageFlag)) {
+                loggedUser.image = 'default.png'
+                loggedUser.imageFlag = false;
             }
             else {
                 loggedUser.imageFlag = true;
@@ -488,12 +537,13 @@ const postAdminInfo = async (req, res) => {
         const timestamp = Date.now();
         const originalNameWithoutExtension = req.file.originalname.split('.').slice(0, -1).join('.');
         const extension = req.file.originalname.split('.').pop();
-        const originalfilenameWithTimestamp = `${originalNameWithoutExtension}-${timestamp}.${extension}`;
-        const smallCircleBuffer = await sharp(req.file.buffer).resize(50, 50).toBuffer();
-        const mediumCircleBuffer = await sharp(req.file.buffer).resize(100, 100).toBuffer();
+        const originalfilenameWithTimestamp = `${originalNameWithoutExtension}-${timestamp}-original.${extension}`;
+        const smallBuffer = await sharp(req.file.buffer).resize(50, 50).toBuffer();
+        const mediumBuffer = await sharp(req.file.buffer).resize(100, 100).toBuffer();
+        const largeBuffer = await sharp(req.file.buffer).resize(200,200).toBuffer();
         const smallfilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-small.${extension}`;
         const mediumfilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-medium.${extension}`;
-        const myfile = [originalfilenameWithTimestamp,smallfilenamewithTimestamp,mediumfilenamewithTimestamp];
+        const largefilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-large.${extension}`;
         const params = {
             Bucket: bucketName,
             Key: originalfilenameWithTimestamp,
@@ -507,7 +557,7 @@ const postAdminInfo = async (req, res) => {
         const params2 = {
             Bucket: bucketName,
             Key: smallfilenamewithTimestamp,
-            Body: smallCircleBuffer,
+            Body: smallBuffer,
             ContentType: req.file.mimetype
         }
         command = new PutObjectCommand(params2);
@@ -517,15 +567,25 @@ const postAdminInfo = async (req, res) => {
         const params3 = {
             Bucket: bucketName,
             Key: mediumfilenamewithTimestamp,
-            Body: mediumCircleBuffer,
+            Body: mediumBuffer,
             ContentType: req.file.mimetype
         }
         command = new PutObjectCommand(params3);
         await s3.send(command);
         console.log('Third file sent');
 
+        const params4 = {
+            Bucket: bucketName,
+            Key: largefilenamewithTimestamp,
+            Body: largeBuffer,
+            ContentType: req.file.mimetype
+        }
+        command = new PutObjectCommand(params4);
+        await s3.send(command);
+        console.log('Fourth file sent');
+
         const loggedUser = await register.findOne({ email: userEmail });
-        if (loggedUser.image === 'default-51cc176f62c7f627f3c63881a0cc7267 e3e23301944ebe557f37c111bb2cb508 476575b147ae24377dd0ad7e8c7d70e6 9851677f02908682144dff62e676c8dd c47cdee7660e19ff11a1292a514d392d.jpeg') {
+        if (loggedUser.image === 'default.png') {
             loggedUser.image = originalfilenameWithTimestamp;
         } else {
             let prevImg = loggedUser.image;
@@ -533,7 +593,34 @@ const postAdminInfo = async (req, res) => {
                 Bucket: bucketName,
                 Key: prevImg,
             }
-            const deleteCommand = new DeleteObjectCommand(deleteParams);
+            let deleteCommand = new DeleteObjectCommand(deleteParams);
+            await s3.send(deleteCommand);
+            parts = prevImg.split('-');
+            let filename = parts[0];
+            let fileTime = parts[1];
+            let fileExt = parts[2].split('.')[1];
+            const smallImage = `${filename}-${fileTime}-small.${fileExt}`;
+            const mediumImage = `${filename}-${fileTime}-medium.${fileExt}`;
+            const largeImage = `${filename}-${fileTime}-large.${fileExt}`;
+            const deleteParams2 = {
+                Bucket: bucketName,
+                Key: smallImage,
+            }
+            deleteCommand = new DeleteObjectCommand(deleteParams2);
+            await s3.send(deleteCommand);
+
+            const deleteParams3 = {
+                Bucket: bucketName,
+                Key: mediumImage,
+            }
+            deleteCommand = new DeleteObjectCommand(deleteParams3);
+            await s3.send(deleteCommand);
+
+            const deleteParams4 = {
+                Bucket: bucketName,
+                Key: largeImage,
+            }
+            deleteCommand = new DeleteObjectCommand(deleteParams4);
             await s3.send(deleteCommand);
             loggedUser.image = originalfilenameWithTimestamp;
         }
@@ -546,5 +633,16 @@ const postAdminInfo = async (req, res) => {
 }
 
 
+const getEditPagePermission = async(req,res) => {
+    try{
+        const perms = await pageModel.find({ role: { $ne: 'SuperAdmin' } });
+        res.status(200).send({data:perms});
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+    }
+}
 
-module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo };
+
+
+module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo,getEditPagePermission,getAddRole };

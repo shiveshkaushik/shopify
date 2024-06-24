@@ -39,7 +39,7 @@ const registrationSchema = new mongoose.Schema({
     } ,
     image:{
         type:String,
-        default:'default'
+        default:'default.png'
     },
     imageFlag:{
         type:Boolean,

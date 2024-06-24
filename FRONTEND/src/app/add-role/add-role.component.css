@@ -1,57 +1,176 @@
 .wrapper {
-    max-width: 450px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .input-box {
-    margin-bottom: 25px;
-    max-width: 420px;
-  }
-  label{
-    margin-right: 10px;
-  }
-  
-  .input-box input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  small {
-    color: red;
-  }
-  
-  .button {
-    text-align: center;
-  }
-  
-  .button input[type="submit"] {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .button input[type="submit"]:hover {
-    background-color: #0056b3;
-  }
-  
-  .text {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
+  max-width: 600px; /* Increased max-width for better layout with table */
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9; /* Added background color for better contrast */
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.input-box {
+  margin-bottom: 25px;
+  max-width: 580px; /* Adjusted to match wrapper's increased width */
+}
+
+.input-box input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+small {
+  color: red;
+}
+
+.button {
+  text-align: center;
+}
+
+.button input[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button input[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.text {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+table input[type="checkbox"] {
+  width: auto; /* Ensures checkboxes are appropriately sized */
+}
+
+.table-container {
+  overflow-x: auto; /* Makes table scrollable on small screens */
+}
+.wrapper {
+  max-width: 600px; /* Increased max-width for better layout with table */
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9; /* Added background color for better contrast */
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.input-box {
+  margin-bottom: 25px;
+  max-width: 580px; /* Adjusted to match wrapper's increased width */
+}
+
+.input-box input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+small {
+  color: red;
+}
+
+.button {
+  text-align: center;
+}
+
+.button input[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button input[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.text {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+table input[type="checkbox"] {
+  width: auto; /* Ensures checkboxes are appropriately sized */
+}
+
+.table-container {
+  overflow-x: auto; /* Makes table scrollable on small screens */
+}

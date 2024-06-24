@@ -15,6 +15,15 @@ form {
     border-radius: 5px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
+.heading{
+    display: flex;
+    justify-content: space-between;
+}
+
+.heading button{
+    max-height: 1.5rem;
+    margin-top: 1.5rem;
+}
 
 table {
     width: 100%;

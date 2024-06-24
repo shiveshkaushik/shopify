@@ -1,19 +1,37 @@
-<body>
-    <div class="wrapper" [ngClass]="formstatus">
-      <h2>Add User</h2>
-      <form action="" [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-        <div class="input-box">
-          <input type="text" placeholder="Enter role name" formControlName="name">
-          @if(myFormControl.name.dirty || submitted){
-            @if(myFormControl.name.errors?.required){
-          <small>*Name is Required</small>
-            }
-          }
-        </div>
-        <div class="input-box button">
-          <input type="submit" value="Add Role">
-        </div>
-      </form>
+<div class="wrapper" [ngClass]="formstatus">
+  <h2>Add User</h2>
+  <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+    <div class="input-box">
+      <input type="text" placeholder="Enter role name" formControlName="name">
+      <div *ngIf="myFormControl.name.dirty || submitted">
+        <small *ngIf="myFormControl.name.errors?.required">*Name is Required</small>
+      </div>
     </div>
-    <button (click)="this.router.navigate(['/users'])">Go Back</button>
-  </body>
+    <div class="input-box">
+      <table>
+        <thead>
+          <tr>
+            <th>Page Name</th>
+            <th>List</th>
+            <th>Add</th>
+            <th>Edit</th>
+            <th>View</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="permissions">
+          <tr *ngFor="let eachPerm of permissions.controls; let i = index" [formGroupName]="i">
+            <td>{{ eachPerm.get('page')?.value }}</td>
+            <td><input type="checkbox" formControlName="list"></td>
+            <td><input type="checkbox" formControlName="add"></td>
+            <td><input type="checkbox" formControlName="edit"></td>
+            <td><input type="checkbox" formControlName="view"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="input-box button">
+      <input type="submit" value="Add Role">
+    </div>
+  </form>
+</div>
+<button (click)="router.navigate(['/page-permission'])">Go Back</button>

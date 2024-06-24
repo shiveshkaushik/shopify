@@ -1,0 +1,34 @@
+<div>
+    <label for="role">Choose Role:</label>
+    <select id="role" [formControl]="selectedRole" (change)="onRoleChange()">
+      <option value="" disabled selected>-Select Option-</option>
+      <option *ngFor="let perm of editPermData" [value]="perm.role">{{ perm.role }}</option>
+    </select>
+    @if(selectedRole.value){
+    <div>
+      <div>
+        <form>
+          <table>
+            <thead>
+              <tr>
+                <th>Page Name</th>
+                <th>List</th>
+                <th>Add</th>
+                <th>Edit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tempPerm of tempData">
+                <td>{{ tempPerm.page }}</td>
+                <td><input type="checkbox" [checked]="tempPerm.access.list"></td>
+                <td><input type="checkbox" [checked]="tempPerm.access.add"></td>
+                <td><input type="checkbox" [checked]="tempPerm.access.edit"></td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
+    </div>
+}
+  </div>
+  

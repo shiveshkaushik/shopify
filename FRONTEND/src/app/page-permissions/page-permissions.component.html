@@ -1,27 +1,46 @@
 <div>
-    <h2>Page Permission</h2>
-    <form [formGroup]="permissionsForm" (ngSubmit)="onSubmit()">
-      <table>
-        <thead>
-          <tr>
-            <th>PageName</th>
-            <th>List</th>
-            <th>Add</th>
-            <th>Edit</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody formArrayName="pages">
-          <tr *ngFor="let page of pages.controls; let i = index" [formGroupName]="i">
-            <td><input formControlName="pageName" type="text"></td>
-            <td><input formControlName="list" type="checkbox"></td>
-            <td><input formControlName="add" type="checkbox"></td>
-            <td><input formControlName="edit" type="checkbox"></td>
-            <td><input formControlName="delete" type="checkbox"></td>
-          </tr>
-        </tbody>
-      </table>
-      <button type="submit">Submit</button>
-    </form>
-  </div>
-  
+  <h2>Page Permission</h2>
+  <div>
+    <button (click)="this.router.navigate(['/add-role'])">Add Role</button>
+</div>
+  <form (ngSubmit)="onSubmit()">
+    <div *ngFor="let each of permissionData; let i = index">
+      <div class="heading">
+        <h3>{{ each.role }}</h3>
+        <button type="button" (click)="toggleEdit(each, $event)">Edit</button>
+      </div>
+      <div *ngIf="each.editMode">
+        <table>
+          <thead>
+            <tr>
+              <th>Page Name</th>
+              <th>List</th>
+              <th>Add</th>
+              <th>Edit</th>
+              <th>View</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let eachPerm of each.permission; let j = index">
+              <td>{{ eachPerm.page }}</td>
+              <td>
+                <input type="checkbox" [(ngModel)]="each.permission[j].list.status" name="list-{{i}}-{{j}}">
+              </td>
+              <td>
+                <input type="checkbox" [(ngModel)]="each.permission[j].add.status" name="add-{{i}}-{{j}}">
+              </td>
+              <td>
+                <input type="checkbox" [(ngModel)]="each.permission[j].edit.status" name="edit-{{i}}-{{j}}">
+              </td>
+              <td>
+                <input type="checkbox" [(ngModel)]="each.permission[j].view.status" name="view-{{i}}-{{j}}">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button type="button" (click)="toggleEdit(each, $event)">Cancel Changes</button>
+        <button type="submit">Save Changes</button>
+      </div>
+    </div>
+  </form>
+</div>
