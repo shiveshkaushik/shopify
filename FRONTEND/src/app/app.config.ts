@@ -9,6 +9,6 @@ import { HeadersInterceptor } from "./headers.interceptor"
 
 export const appConfig: ApplicationConfig = {
   providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes), provideToastr(), provideAnimations(),
-  //provideHttpClient(withFetch(), withInterceptors([tokenAuthInterceptor]))
+  provideHttpClient(withFetch(), withInterceptors([tokenAuthInterceptor]))
   ]
 };

@@ -16,6 +16,8 @@ export class AdminInfoComponent implements OnInit {
   adminInfoName: String = '';
   adminInfoEmail: String = '';
   adminInfoRole: String = '';
+  adminInfoImage: String = '';
+  adminImageFlag : String = '';
   adminInfoForm!: FormGroup;
   submitted: boolean = false;
   file: any;
@@ -30,6 +32,9 @@ export class AdminInfoComponent implements OnInit {
           this.adminInfoName = data.name;
           this.adminInfoEmail = data.email;
           this.adminInfoRole = data.role;
+          this.adminInfoImage = data.imageUrl;
+          this.adminImageFlag = data.flag;
+          console.log(this.adminInfoImage);
         }
       });
     }

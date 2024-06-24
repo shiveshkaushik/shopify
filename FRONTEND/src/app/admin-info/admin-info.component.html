@@ -1,7 +1,12 @@
 <div class="container">
     <h1>Admin Information</h1>
-    <img src="" alt="User Image">
+    <img src={{adminInfoImage}} alt="User Image">
+    <br><br>
+    @if(!adminImageFlag){
     <button (click)="showForm()">Add Image</button>
+    }@else{
+    <button (click)="showForm()">Edit Image</button>
+    }
     @if(isFormVisible){
     <div isFormVisible class="form-container">
       <form [formGroup]="adminInfoForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">

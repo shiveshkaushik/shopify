@@ -36,7 +36,19 @@ const registrationSchema = new mongoose.Schema({
     role:{
         type:String,
         default:'no',
-    }   
+    } ,
+    image:{
+        type:String,
+        default:'default'
+    },
+    imageFlag:{
+        type:Boolean,
+        default:false
+    },
+    imageUrl:{
+        type:String,
+        default:''
+    }  
 });
 
 const register = mongoose.model('users',registrationSchema);

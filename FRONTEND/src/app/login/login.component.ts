@@ -32,7 +32,6 @@ export class LoginComponent implements OnInit {
     this.myloginForm.statusChanges.subscribe((status)=>{
       this.formstatus = status;
     })
-    //this.httpService.httpRequest();
 
   }
   

@@ -8,11 +8,13 @@ const changedThePassword = require('../actions/activity');
 require('dotenv').config();
 const secret = process.env.JWT_SECRET;
 const bcrypt = require('bcryptjs');
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const bucketName = process.env.BUCKET_NAME;
 const bucketRegion = process.env.BUCKET_REGION;
 const accessKey = process.env.ACCESS_KEY;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY;
+const sharp = require('sharp');
 
 const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10);
@@ -441,8 +443,23 @@ const getAdminInfo = async (req, res) => {
         const role = decodedToken.role;
         const loggedUser = await register.findOne({ email: userEmail });
         if (loggedUser) {
+            let defaultKey = 'default-51cc176f62c7f627f3c63881a0cc7267 e3e23301944ebe557f37c111bb2cb508 476575b147ae24377dd0ad7e8c7d70e6 9851677f02908682144dff62e676c8dd c47cdee7660e19ff11a1292a514d392d.jpeg';
+            if (loggedUser.image === 'default' && !(loggedUser.imageFlag)) {
+                loggedUser.image = defaultKey;
+            }
+            else {
+                loggedUser.imageFlag = true;
+            }
+            const getObjectParams = {
+                Bucket: bucketName,
+                Key: loggedUser.image,
+            }
+            const command = new GetObjectCommand(getObjectParams);
+            const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+            loggedUser.imageUrl = url;
+            await loggedUser.save();
             const name = loggedUser.name;
-            let data = { email: userEmail, name: name, role: role };
+            let data = { email: userEmail, name: name, role: role, imageUrl: url, flag: loggedUser.imageFlag };
             res.status(200).json(data);
         }
         else {
@@ -464,17 +481,63 @@ const s3 = new S3Client({
 
 const postAdminInfo = async (req, res) => {
     try {
+        const authHeader = req.headers && req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        const decodedToken = jwt.decode(token);
+        const userEmail = decodedToken.email;
         const timestamp = Date.now();
+        const originalNameWithoutExtension = req.file.originalname.split('.').slice(0, -1).join('.');
         const extension = req.file.originalname.split('.').pop();
-        const filenameWithTimestamp = `${req.file.originalname}-${timestamp}.${extension}`;
+        const originalfilenameWithTimestamp = `${originalNameWithoutExtension}-${timestamp}.${extension}`;
+        const smallCircleBuffer = await sharp(req.file.buffer).resize(50, 50).toBuffer();
+        const mediumCircleBuffer = await sharp(req.file.buffer).resize(100, 100).toBuffer();
+        const smallfilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-small.${extension}`;
+        const mediumfilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-medium.${extension}`;
+        const myfile = [originalfilenameWithTimestamp,smallfilenamewithTimestamp,mediumfilenamewithTimestamp];
         const params = {
             Bucket: bucketName,
-            Key: filenameWithTimestamp,
+            Key: originalfilenameWithTimestamp,
             Body: req.file.buffer,
             ContentType: req.file.mimetype
         }
-        const command = new PutObjectCommand(params);
-        const result = await s3.send(command);
+        let command = new PutObjectCommand(params);
+        await s3.send(command);
+        console.log('First file sent');
+
+        const params2 = {
+            Bucket: bucketName,
+            Key: smallfilenamewithTimestamp,
+            Body: smallCircleBuffer,
+            ContentType: req.file.mimetype
+        }
+        command = new PutObjectCommand(params2);
+        await s3.send(command);
+        console.log('Second file sent');
+
+        const params3 = {
+            Bucket: bucketName,
+            Key: mediumfilenamewithTimestamp,
+            Body: mediumCircleBuffer,
+            ContentType: req.file.mimetype
+        }
+        command = new PutObjectCommand(params3);
+        await s3.send(command);
+        console.log('Third file sent');
+
+        const loggedUser = await register.findOne({ email: userEmail });
+        if (loggedUser.image === 'default-51cc176f62c7f627f3c63881a0cc7267 e3e23301944ebe557f37c111bb2cb508 476575b147ae24377dd0ad7e8c7d70e6 9851677f02908682144dff62e676c8dd c47cdee7660e19ff11a1292a514d392d.jpeg') {
+            loggedUser.image = originalfilenameWithTimestamp;
+        } else {
+            let prevImg = loggedUser.image;
+            const deleteParams = {
+                Bucket: bucketName,
+                Key: prevImg,
+            }
+            const deleteCommand = new DeleteObjectCommand(deleteParams);
+            await s3.send(deleteCommand);
+            loggedUser.image = originalfilenameWithTimestamp;
+        }
+        await loggedUser.save();
         res.status(200).send('Req received');
     } catch (err) {
         console.log(err);
