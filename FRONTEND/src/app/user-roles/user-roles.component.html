@@ -33,7 +33,7 @@
           <form [formGroup]="editRoleForm" (ngSubmit)="onSubmit()">
             <label for="role">Select Role:</label>
             <select id="role" formControlName="role">
-              <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
+              <option *ngFor="let role of roles" [value]="role.role">{{ role.role }}</option>
             </select>
             <button type="submit" [disabled]="editRoleForm.invalid">Save</button>
             <button type="button" (click)="cancelEdit()">Cancel</button>

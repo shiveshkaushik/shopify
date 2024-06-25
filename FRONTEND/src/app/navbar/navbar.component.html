@@ -7,14 +7,14 @@
     </div>
 
     <ul class="sidebar-list">
-        @if(showDashboard||this.flag){
+        @for(item of permissions; track item){
         <li class="sidebar-list-item">
-            <a routerLink="/dashboard">
-                <span class="material-icons-outlined">dashboard</span> Dashboard
+            <a [routerLink]="item.list.url">
+                <span class="material-icons-outlined">{{item.icon?item.icon:'dashboard'}}</span> {{item.page}}
             </a>
         </li>
-    }
-    @if(showProduct||flag){
+        }
+        <!-- @if(showProduct||flag){
         <li class="sidebar-list-item">
             <a routerLink="/products">
                 <span class="material-icons-outlined">inventory_2</span> Products
@@ -53,6 +53,6 @@
                 <span class="material-icons-outlined">fact_check</span>User Roles
             </a>
         </li>
-    }
+    } -->
     </ul>
 </aside>

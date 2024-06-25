@@ -1,13 +1,18 @@
 <div>
   <h2>Page Permission</h2>
   <div>
+    @if(addPerm || superControl){
     <button (click)="this.router.navigate(['/add-role'])">Add Role</button>
+    }
 </div>
   <form (ngSubmit)="onSubmit()">
     <div *ngFor="let each of permissionData; let i = index">
       <div class="heading">
         <h3>{{ each.role }}</h3>
+        @if(editPerm || superControl){
         <button type="button" (click)="toggleEdit(each, $event)">Edit</button>
+        <button type="button" (click)="deleteRole(each)">Delete</button>
+        }
       </div>
       <div *ngIf="each.editMode">
         <table>

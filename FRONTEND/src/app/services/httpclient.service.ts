@@ -32,6 +32,7 @@ export class HttpClientService {
       return response.data;
     } catch (error: any) {
       console.log(error);
+      this.router.navigate(['/dashboard']);
       const errorMessage = error.response.data || error.message;
       this.toastr.error(errorMessage, 'Error!');
     }

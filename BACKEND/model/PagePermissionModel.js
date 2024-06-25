@@ -16,5 +16,5 @@ const pageModel = new mongoose.Schema({
     }
 })
 
-const pagePermissionModel = mongoose.model('page-permission',pageModel);
+const pagePermissionModel = mongoose.model('roles',pageModel);
 module.exports = pagePermissionModel;

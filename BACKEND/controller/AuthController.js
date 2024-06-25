@@ -1,8 +1,6 @@
 const register = require('../model/AuthModel');
 const log = require('../model/LogModel');
 const sesModel = require('../model/SessionModel');
-const perModel = require('../model/PermissionModel');
-const permissionCheckModel = require('../model/PermissionCheckboxModel');
 const pageModel = require('../model/PagePermissionModel');
 const jwt = require('jsonwebtoken');
 const changedThePassword = require('../actions/activity');
@@ -17,7 +15,7 @@ const accessKey = process.env.ACCESS_KEY;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY;
 const sharp = require('sharp');
 
-let PageList = ['DashBoard','Product','Reports','Purchase','Role-Permission','User-Roles']
+let PageList = ['DashBoard', 'Product', 'Reports', 'Purchase', 'Role-Permission', 'User-Roles']
 
 const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10);
@@ -71,9 +69,7 @@ const PostLogin = async (req, res) => {
         }
 
         const userRole = logUser.role;
-        const rolePerms = await perModel.findOne({ name: userRole });
-        const perms = rolePerms.roleAccess;
-
+        const rolePerms = await pageModel.findOne({ role: userRole });
         const isMatched = await comparePassword(password, logUser.password);
         if (!isMatched) {
             return res.status(400).send('Invalid Credentials');
@@ -87,8 +83,8 @@ const PostLogin = async (req, res) => {
         let updated = new Date(created).getTime();
         const sessionofUser = await sesModel.create({ userId: existUserID, email: userEmail, token: token, createdAt: created, updatedAt: updated })
         const logofUser = await log.create({ userId: existUserID, email: userEmail, loginTime: loginTime, actions: [] });
-
-        res.status(200).json({ token: token, email: userEmail, permissions: perms });
+        arrayofperms = [];
+        res.status(200).json({ token: token, email: userEmail, permissions: arrayofperms });
     } catch (error) {
         console.error("Error while finding user:", error);
         return res.status(500).send('Server Error');
@@ -144,8 +140,9 @@ const getDashboard = async (req, res) => {
         if (userRole == 'SuperAdmin') {
             flag = true;
         }
-        const perms = await perModel.findOne({ name: userRole });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('Dashboard')) || flag === true) {
+        const perms = await pageModel.findOne({ role: userRole });
+        let result = false;
+        if (perms && perms.permission && result || flag === true) {
             const userEmail = decodedToken.email;
             const loggedUser = await register.findOne({ email: userEmail });
             if (loggedUser) {
@@ -230,7 +227,7 @@ const getAdminDetails = async (req, res) => {
         if (userRole == 'SuperAdmin') {
             flag = true;
         }
-        const perms = await perModel.findOne({ name: userRole });
+        const perms = await pageModel.findOne({ role:userRole });
         if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
             const userEmail = decodedToken.email;
             const loggedUser = await register.findOne({ email: userEmail });
@@ -238,7 +235,7 @@ const getAdminDetails = async (req, res) => {
             if (loggedUser.superAdmin) {
                 superControl = true;
             };
-            const allRoles = await perModel.find({ name: { $ne: 'SuperAdmin' } });
+            const allRoles = await pageModel.find({ role: { $ne: 'SuperAdmin' } });
             res.status(200).json({ admins: userAdmins, control: superControl, roles: allRoles });
         } else {
             res.status(500).send('Not Allowed');
@@ -251,7 +248,7 @@ const getAdminDetails = async (req, res) => {
 
 
 }
-
+/*
 
 const editRoleUser = async (req, res) => {
     try {
@@ -283,6 +280,7 @@ const editRoleUser = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 }
+    */
 
 const changeUserRole = async (req, res) => {
     try {
@@ -294,16 +292,11 @@ const changeUserRole = async (req, res) => {
         if (userRoles == 'SuperAdmin') {
             flag = true;
         }
-        const perms = await perModel.findOne({ name: userRoles });
-        if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
+        const perms = await pageModel.findOne({ role: userRoles });
             const { email: userEmail, role: userRole } = req.body;
             const user = await register.findOneAndUpdate({ email: userEmail }, { role: userRole });
             console.log(user);
             res.status(200).send('Roles Updated');
-        }
-        else {
-            res.status(500).send('Not Allowed');
-        }
     } catch (err) {
         console.error('Error while updating roles', err);
         res.status(500).send('Internal Server Error');
@@ -311,6 +304,7 @@ const changeUserRole = async (req, res) => {
 }
 
 
+/*
 const getRolePermissions = async (req, res) => {
     try {
         const authHeader = req.headers && req.headers['authorization'];
@@ -367,7 +361,7 @@ const editRolePermission = async (req, res) => {
     }
 };
 
-
+*/
 const getNavbarPermission = async (req, res) => {
     try {
         const authHeader = req.headers && req.headers['authorization'];
@@ -376,7 +370,7 @@ const getNavbarPermission = async (req, res) => {
         const userRole = decodedToken.role;
         let flag = false;
         if (userRole === 'SuperAdmin') { flag = true }
-        let permissions = await perModel.findOne({ name: userRole });
+        let permissions = await pageModel.findOne({ role: userRole });
         if (!permissions) {
             permissions = [];
         }
@@ -388,10 +382,10 @@ const getNavbarPermission = async (req, res) => {
     }
 }
 
-const getAddRole = async(req,res) => {
-    try{
-        res.status(200).send({page:PageList});
-    }catch(err){
+const getAddRole = async (req, res) => {
+    try {
+        res.status(200).send({ page: PageList });
+    } catch (err) {
         console.log(err);
         res.status(500).send('Internal Server Error');
     }
@@ -407,14 +401,14 @@ const addRole = async (req, res) => {
         if (userRole == 'SuperAdmin') {
             flag = true;
         }
-        let l,a,e,v;
+        let l, a, e, v;
         let myperm = [];
-        const perms = await perModel.findOne({ name: userRole });
+        const perms = await pageModel.findOne({ role: userRole });
         if (perms && perms.roleAccess && (perms.roleAccess.includes('RolePermission')) || flag === true) {
             const { role: name } = req.body;
             const checkRole = await pageModel.findOne({ role: name });
             if (!checkRole) {
-                let {name,permissions} = req.body;
+                let { name, permissions } = req.body;
                 permissions.forEach(perm => {
                     let main = perm.page;
                     l = perm.list;
@@ -422,31 +416,35 @@ const addRole = async (req, res) => {
                     e = perm.edit;
                     v = perm.view;
                     let obj = {
-                        page:main,
-                        list:{type:'list',
+                        page: main,
+                        list: {
+                            type: 'list',
                             title: 'List',
                             status: l,
-                            url:`/${main}/list`
+                            url: `/${main}/list`
                         },
-                        add:{type:'add',
+                        add: {
+                            type: 'add',
                             title: 'Add',
                             status: a,
-                            url:`/${main}/add`
+                            url: `/${main}/add`
                         },
-                        edit:{type:'edit',
+                        edit: {
+                            type: 'edit',
                             title: 'Edit',
                             status: e,
-                            url:`/${main}/edit`
+                            url: `/${main}/edit`
                         },
-                        view:{type:'view',
+                        view: {
+                            type: 'view',
                             title: 'View',
                             status: v,
-                            url:`/${main}/view`
+                            url: `/${main}/view`
                         }
-                } 
-                myperm.push(obj);
+                    }
+                    myperm.push(obj);
                 })
-                await pageModel.create({role:name,permission:myperm,editMode:false});
+                await pageModel.create({ role: name, permission: myperm, editMode: false });
                 return res.status(200).send('Role Created');
             }
             return res.status(500).send('Role already Exists');
@@ -463,8 +461,38 @@ const addRole = async (req, res) => {
 
 const getPermissionCheckBox = async (req, res) => {
     try {
-        const allPerms = await pageModel.find();
-        res.status(200).send({data:allPerms});
+        const authHeader = req.headers && req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        const decodedToken = jwt.decode(token);
+        const userRole = decodedToken.role;
+        let superAdmin = false;
+        let access = false;
+        let otherPerm;
+        if(userRole === 'SuperAdmin')
+            {
+                access = true;
+                superAdmin = true;
+            }
+            else{
+                console.log(userRole);
+                const perms = await pageModel.findOne({role:userRole});
+                perms.permission.forEach(p => {
+                    if(p.page === 'Role-Permission'){
+                        if(p.view.status){
+                        access = true;
+                        otherPerm = p;
+                        }
+                    }
+                })
+            }
+            console.log(access);
+            if(access){
+        const allPerms = await pageModel.find({});
+        res.status(200).send({ data: allPerms,perm:otherPerm,scontrol:superAdmin });
+            }
+            else{
+                res.status(400).send('Not Allowed');
+            }
     } catch (err) {
         console.log(err);
         res.status(500).send('Interal Server Error');
@@ -473,14 +501,26 @@ const getPermissionCheckBox = async (req, res) => {
 
 const postPermissionCheckbox = async (req, res) => {
     try {
-        const {name,data} = req.body;
-        const result = await pageModel.findOneAndUpdate({role:name},{permission:data});
+        const { name, data } = req.body;
+        const result = await pageModel.findOneAndUpdate({ role: name }, { permission: data });
         res.status(200).send('Req Accepted');
     } catch (err) {
         console.log(err);
         res.status(500).send('Interal Server Error');
     }
 }
+
+const permissionDelete = async(req,res) => {
+    try{
+        const {role} = req.body;
+        console.log(role);
+        await pageModel.findOneAndDelete({role:role.role});
+        res.status(200).send('Success');
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Interal Server Error');
+    }
+} 
 
 const getAdminInfo = async (req, res) => {
     try {
@@ -535,18 +575,24 @@ const postAdminInfo = async (req, res) => {
         const decodedToken = jwt.decode(token);
         const userEmail = decodedToken.email;
         const timestamp = Date.now();
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const folderPath = `${year}/${month}/${day}/`;
+
         const originalNameWithoutExtension = req.file.originalname.split('.').slice(0, -1).join('.');
         const extension = req.file.originalname.split('.').pop();
         const originalfilenameWithTimestamp = `${originalNameWithoutExtension}-${timestamp}-original.${extension}`;
         const smallBuffer = await sharp(req.file.buffer).resize(50, 50).toBuffer();
         const mediumBuffer = await sharp(req.file.buffer).resize(100, 100).toBuffer();
-        const largeBuffer = await sharp(req.file.buffer).resize(200,200).toBuffer();
+        const largeBuffer = await sharp(req.file.buffer).resize(200, 200).toBuffer();
         const smallfilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-small.${extension}`;
         const mediumfilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-medium.${extension}`;
         const largefilenamewithTimestamp = `${originalNameWithoutExtension}-${timestamp}-large.${extension}`;
         const params = {
             Bucket: bucketName,
-            Key: originalfilenameWithTimestamp,
+            Key: `${folderPath}${originalfilenameWithTimestamp}`,
             Body: req.file.buffer,
             ContentType: req.file.mimetype
         }
@@ -556,7 +602,7 @@ const postAdminInfo = async (req, res) => {
 
         const params2 = {
             Bucket: bucketName,
-            Key: smallfilenamewithTimestamp,
+            Key: `${folderPath}${smallfilenamewithTimestamp}`,
             Body: smallBuffer,
             ContentType: req.file.mimetype
         }
@@ -566,7 +612,7 @@ const postAdminInfo = async (req, res) => {
 
         const params3 = {
             Bucket: bucketName,
-            Key: mediumfilenamewithTimestamp,
+            Key: `${folderPath}${mediumfilenamewithTimestamp}`,
             Body: mediumBuffer,
             ContentType: req.file.mimetype
         }
@@ -576,7 +622,7 @@ const postAdminInfo = async (req, res) => {
 
         const params4 = {
             Bucket: bucketName,
-            Key: largefilenamewithTimestamp,
+            Key: `${folderPath}${largefilenamewithTimestamp}`,
             Body: largeBuffer,
             ContentType: req.file.mimetype
         }
@@ -586,7 +632,7 @@ const postAdminInfo = async (req, res) => {
 
         const loggedUser = await register.findOne({ email: userEmail });
         if (loggedUser.image === 'default.png') {
-            loggedUser.image = originalfilenameWithTimestamp;
+            loggedUser.image = `${folderPath}${originalfilenameWithTimestamp}`;
         } else {
             let prevImg = loggedUser.image;
             const deleteParams = {
@@ -596,6 +642,7 @@ const postAdminInfo = async (req, res) => {
             let deleteCommand = new DeleteObjectCommand(deleteParams);
             await s3.send(deleteCommand);
             parts = prevImg.split('-');
+            console.log(parts);
             let filename = parts[0];
             let fileTime = parts[1];
             let fileExt = parts[2].split('.')[1];
@@ -622,7 +669,7 @@ const postAdminInfo = async (req, res) => {
             }
             deleteCommand = new DeleteObjectCommand(deleteParams4);
             await s3.send(deleteCommand);
-            loggedUser.image = originalfilenameWithTimestamp;
+            loggedUser.image = `${folderPath}${originalfilenameWithTimestamp}`;
         }
         await loggedUser.save();
         res.status(200).send('Req received');
@@ -633,11 +680,11 @@ const postAdminInfo = async (req, res) => {
 }
 
 
-const getEditPagePermission = async(req,res) => {
-    try{
+const getEditPagePermission = async (req, res) => {
+    try {
         const perms = await pageModel.find({ role: { $ne: 'SuperAdmin' } });
-        res.status(200).send({data:perms});
-    }catch(err){
+        res.status(200).send({ data: perms });
+    } catch (err) {
         console.log(err);
         res.status(500).send('Internal Server Error');
     }
@@ -645,4 +692,4 @@ const getEditPagePermission = async(req,res) => {
 
 
 
-module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, editRoleUser, changeUserRole, getRolePermissions, editRolePermission, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo,getEditPagePermission,getAddRole };
+module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo, getEditPagePermission, getAddRole,permissionDelete,changeUserRole };

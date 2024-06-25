@@ -15,6 +15,9 @@ import { FormsModule } from '@angular/forms';
 })
 export class PagePermissionsComponent implements OnInit{
   permissionData : any;
+  addPerm : boolean = false;
+  editPerm : boolean = false;
+  superControl : boolean = false;
 
 
   constructor(private fb: FormBuilder, private httpService: HttpClientService,public router:Router) {
@@ -26,7 +29,12 @@ export class PagePermissionsComponent implements OnInit{
       this.httpService.GetRequest('/page-permission').then((data:any)=>{
         if(data){
           this.permissionData = data.data;
-          console.log(this.permissionData);
+          this.superControl = data.scontrol;
+          if(!this.superControl)
+            {
+              this.addPerm = data.add.status;
+              this.editPerm = data.edit.status;
+            }
         }
           
       })
@@ -60,5 +68,13 @@ export class PagePermissionsComponent implements OnInit{
   toggleEdit(role: any,event:Event) {
     event.preventDefault();
     role.editMode = !role.editMode;
+  }
+
+  deleteRole(role:any){
+    this.httpService.PostRequest('/page-permission/delete',{role:role}).then((data:any)=>{
+      if(data){
+        console.log(data);
+      }
+    })
   }
 }

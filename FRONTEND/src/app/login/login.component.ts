@@ -1,5 +1,5 @@
-import { Component,OnInit } from '@angular/core';
-import { FormBuilder,ReactiveFormsModule,FormsModule, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, FormsModule, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from "@angular/router";
 import { login } from '../config/ApiConstants';
@@ -10,59 +10,55 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-checkbox',
   standalone: true,
-  imports: [ReactiveFormsModule,FormsModule,CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 
 export class LoginComponent implements OnInit {
   myloginForm !: FormGroup;
-  submitted : boolean = false;
-  formstatus : string = '';
-  token:any;
+  submitted: boolean = false;
+  formstatus: string = '';
+  token: any;
 
-  constructor(private fb:FormBuilder,private httpService: HttpClientService, private router:Router,private toastr:ToastrService){};
-  ngOnInit(){
+  constructor(private fb: FormBuilder, private httpService: HttpClientService, private router: Router, private toastr: ToastrService) { };
+  ngOnInit() {
     this.token = localStorage.getItem('angulartoken');
-            this.myloginForm = this.fb.group({
-      email:['',[Validators.required,Validators.email]],
-      password:['',Validators.required]
-    }) 
+    this.myloginForm = this.fb.group({
+      email: ['alpha@gmail.com', [Validators.required, Validators.email]],
+      password: ['Alpha123*', Validators.required]
+    })
 
-    this.myloginForm.statusChanges.subscribe((status)=>{
+    this.myloginForm.statusChanges.subscribe((status) => {
       this.formstatus = status;
     })
 
   }
-  
-  get myFormControl()
-  {
+
+  get myFormControl() {
     return this.myloginForm.controls;
   }
 
-  onSubmit()
-  {
+  onSubmit() {
     this.submitted = true;
-    if(this.myloginForm.valid)
-      {
-        let formValue = this.myloginForm.value;
-        this.httpService.PostRequest(login,formValue)
-        .then((data:any)=>{
-          if(data)
-            {
-              console.log('Success',data);
-              localStorage.setItem('angulartoken',data.token);
-              localStorage.setItem('useremail',data.email);
-              localStorage.setItem('perms',data.permissions);
-              this.myloginForm.reset();
-              this.submitted = false;
-              this.router.navigate(['/dashboard']);
-            }
+    if (this.myloginForm.valid) {
+      let formValue = this.myloginForm.value;
+      this.httpService.PostRequest(login, formValue)
+        .then((data: any) => {
+          if (data) {
+            console.log('Success', data);
+            localStorage.setItem('angulartoken', data.token);
+            localStorage.setItem('useremail', data.email);
+            localStorage.setItem('perms', JSON.stringify(data.permissions));
+            this.myloginForm.reset();
+            this.submitted = false;
+            this.router.navigate(['/dashboard']);
+          }
         })
-      }
-      else{
-        return false;
-      }
+    }
+    else {
+      return false;
+    }
   }
 
 

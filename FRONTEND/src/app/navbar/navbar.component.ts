@@ -1,4 +1,4 @@
-import { Component} from '@angular/core';
+import { Component } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { HttpClientService } from '../services/httpclient.service';
 import { Router, RouterModule } from '@angular/router';
@@ -12,14 +12,14 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class NavbarComponent {
   userName: string = 'Username';
-  flag : boolean = false;
-  showDashboard : boolean = false;
-  showProduct : boolean = false;
-  showPurchase : boolean = false;
-  showReport : boolean = false;
-  showRolePermission : boolean = false;
-  showUserRoles : boolean = false;
-
+  flag: boolean = false;
+  showDashboard: boolean = false;
+  showProduct: boolean = false;
+  showPurchase: boolean = false;
+  showReport: boolean = false;
+  showRolePermission: boolean = false;
+  showUserRoles: boolean = false;
+  permissions: any[] = [];
   constructor(public router: Router, private toastr: ToastrService, private httpService: HttpClientService) { }
 
   ngOnInit(): void {
@@ -27,15 +27,11 @@ export class NavbarComponent {
     if (!token) {
       this.router.navigate(['/login']);
     } else {
-          let perms = localStorage.getItem('perms');
-          if(perms){
-          this.showDashboard = perms.includes('Dashboard');
-          this.showProduct = perms.includes('Products');
-          this.showPurchase = perms.includes('Purchase');
-          this.showReport = perms.includes('Reports');
-          this.showRolePermission = perms.includes('RolePermission');
-          this.showUserRoles = perms.includes('UserRoles');
-          }
-        };
-    }
+      let perms = localStorage.getItem('perms');
+      if(perms){
+        this.permissions = JSON.parse(perms);
+      }
+      console.log("perms-->", this.permissions)
+    };
   }
+}
