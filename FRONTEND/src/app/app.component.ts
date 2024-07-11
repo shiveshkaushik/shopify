@@ -29,12 +29,13 @@ export class AppComponent implements OnInit{
 
   ngOnInit(): void {
     this.linkTrackerService.getVisitedLinks().subscribe(link => {
-      if (link.includes('/login')  || link.includes('/register')) {
+      if (link.includes('/login') || link.includes('/register')) {
         this.showNavbar = false;
       } else {
         this.showNavbar = true;
       }
     });
   }
+
 
 }

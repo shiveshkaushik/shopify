@@ -16,6 +16,7 @@
             <th>Add</th>
             <th>Edit</th>
             <th>View</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody formArrayName="permissions">
@@ -25,6 +26,7 @@
             <td><input type="checkbox" formControlName="add"></td>
             <td><input type="checkbox" formControlName="edit"></td>
             <td><input type="checkbox" formControlName="view"></td>
+            <td><input type="checkbox" formControlName="delete"></td>
           </tr>
         </tbody>
       </table>
@@ -34,4 +36,4 @@
     </div>
   </form>
 </div>
-<button (click)="router.navigate(['/page-permission'])">Go Back</button>
+<button (click)="router.navigate(['/role-permissions'])">Go Back</button>

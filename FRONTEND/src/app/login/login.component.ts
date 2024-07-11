@@ -25,8 +25,8 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     this.token = localStorage.getItem('angulartoken');
     this.myloginForm = this.fb.group({
-      email: ['alpha@gmail.com', [Validators.required, Validators.email]],
-      password: ['Alpha123*', Validators.required]
+      email: ['admin@gmail.com', [Validators.required, Validators.email]],
+      password: ['Admin123*', Validators.required]
     })
 
     this.myloginForm.statusChanges.subscribe((status) => {

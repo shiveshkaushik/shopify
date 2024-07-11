@@ -1,0 +1,21 @@
+<div class="form-container">
+  <h1>Add Product</h1>
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <label for="productName">Name of Product</label>
+    <input type="text" id="productName" formControlName="productName" required>
+    
+    <label for="category">Category</label>
+    <select id="category" formControlName="category" required>
+      <option value="">Select a category</option>
+      <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+    </select>
+
+    <label for="price">Price of Product</label>
+    <input type="number" id="price" formControlName="price" required>
+
+    <label for="image">Image of Product</label>
+    <input type="file" id="image" (change)="onFileSelected($event)" accept="image/*" required>
+    
+    <button type="submit" [disabled]="!productForm.valid">Submit</button>
+  </form>
+</div>

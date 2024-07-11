@@ -23,6 +23,7 @@
               <th>Add</th>
               <th>Edit</th>
               <th>View</th>
+              <th>Delete</th>
             </tr>
           </thead>
           <tbody>
@@ -39,6 +40,9 @@
               </td>
               <td>
                 <input type="checkbox" [(ngModel)]="each.permission[j].view.status" name="view-{{i}}-{{j}}">
+              </td>
+              <td>
+                <input type="checkbox" [(ngModel)]="each.permission[j].delete.status" name="delete-{{i}}-{{j}}">
               </td>
             </tr>
           </tbody>

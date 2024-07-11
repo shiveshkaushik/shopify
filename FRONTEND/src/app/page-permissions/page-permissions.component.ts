@@ -30,6 +30,7 @@ export class PagePermissionsComponent implements OnInit{
         if(data){
           this.permissionData = data.data;
           this.superControl = data.scontrol;
+          console.log(data)
           if(!this.superControl)
             {
               this.addPerm = data.add.status;

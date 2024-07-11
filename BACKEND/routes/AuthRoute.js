@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { PostLogin, PostRegister,getDashboard,logout,changePassword,getAdminDetails, getNavbarPermission,addRole,getPermissionCheckBox,postPermissionCheckbox,getAdminInfo,postAdminInfo, getEditPagePermission, getAddRole,permissionDelete,changeUserRole} = require('../controller/AuthController');
+const { PostLogin, PostRegister,getDashboard,logout,changePassword,getAdminDetails, getNavbarPermission,addRole,getPermissionCheckBox,postPermissionCheckbox,getAdminInfo,postAdminInfo, getEditPagePermission, getAddRole,permissionDelete,changeUserRole,getProducts, verifyAddProduct,productEdit} = require('../controller/AuthController');
 const {authenticateToken} = require('../middleware/Authentication');
 const {uploadSingleFile} = require('../middleware/Multer');
 
@@ -30,4 +30,11 @@ router.post('/page-permission/delete',authenticateToken,permissionDelete)
 router.get('/admin-info',authenticateToken,getAdminInfo);
 router.post('/admin-info',authenticateToken,uploadSingleFile,postAdminInfo)
 
+//products
+router.get('/products',authenticateToken,getProducts)
+
+//add product
+router.get('/products/add',authenticateToken,verifyAddProduct)
+
+router.post('/products/edit',authenticateToken,productEdit)
 module.exports = router;

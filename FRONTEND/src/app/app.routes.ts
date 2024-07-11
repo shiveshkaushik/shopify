@@ -17,6 +17,7 @@ import { UserRolesComponent } from './user-roles/user-roles.component';
 import { AddUserComponent } from './add-role/add-role.component';
 import { PagePermissionsComponent } from './page-permissions/page-permissions.component';
 import { EditPermissionComponent } from './page-permission/edit-permission/edit-permission.component';
+import { ProductsAddComponent } from './products-add/products-add.component';
 
 export const routes: Routes = [
     {
@@ -61,7 +62,7 @@ export const routes: Routes = [
 
     },
     {
-        path:'reviews',
+        path:'reports',
         component:ReviewsComponent,
         canActivate:[authGuard]
     },
@@ -90,13 +91,18 @@ export const routes: Routes = [
         canActivate:[authGuard]
     },
     {
-        path:'page-permission',
+        path:'role-permissions',
         component:PagePermissionsComponent,
         canActivate:[authGuard]
     },
     {
-        path:'page-permission/edit-permission',
+        path:'role-permissions/edit-permission',
         component:EditPermissionComponent,
+        canActivate:[authGuard]
+    },
+    {
+        path:'products/add',
+        component:ProductsAddComponent,
         canActivate:[authGuard]
     },
     {

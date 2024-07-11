@@ -4,39 +4,100 @@
   <title>Products Page</title>
 </head>
 <body>
-  <h1>Products Page</h1>
-
-  <h2>All Products</h2>
+  <div class="headers-div">
+    <h1>Products Page</h1>
+    @if(add){
+    <button (click)="handleClick()">Add Product</button>
+    }
+  </div>
   <table class="product-table">
     <thead>
       <tr>
+        <th>S.No</th>
         <th>Product Name</th>
         <th>Price</th>
         <th>Description</th>
+        @if(actions){
+        <th>Actions</th>
+        }
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>Product 1</td>
-        <td>$20</td>
-        <td>Description of Product 1</td>
-      </tr>
-      <tr>
-        <td>Product 2</td>
-        <td>$25</td>
-        <td>Description of Product 2</td>
-      </tr>
-      <tr>
-        <td>Product 3</td>
-        <td>$50</td>
-        <td>Description of Product 3</td>
-      </tr>
-      <tr>
-        <td>Product 4</td>
-        <td>$60</td>
-        <td>Description of Product 4</td>
+      <tr *ngFor="let product of paginatedProducts; let i = index">
+        <td>{{ getSerialNumber(i) }}</td>
+        <td>{{ product.title }}</td>
+        <td>${{ product.price }}</td>
+        <td>{{ product.description }}</td>
+        @if(actions){
+        <td>
+          @if(view){
+          <button class="action-button view" (click)="viewProduct(product)">View</button>
+          }
+          @if(edit){
+          <button class="action-button edit" (click)="editProduct(product)">Edit</button>
+          }
+          @if(delete){
+          <button class="action-button delete" (click)="deleteProduct(product)">Delete</button>
+          }
+        </td>
+      }
       </tr>
     </tbody>
   </table>
+
+  <div class="pagination">
+    <button [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+  </div>
+
+  <!-- Modal for viewing product details -->
+   @if(view){
+  <div *ngIf="selectedProduct" class="modal">
+    <div class="modal-content">
+      <h2>Product Details</h2>
+      <p><strong>ID:</strong> {{ selectedProduct.id }}</p>
+      <p><strong>Title:</strong> {{ selectedProduct.title }}</p>
+      <p><strong>Price:</strong> ${{ selectedProduct.price }}</p>
+      <p><strong>Category:</strong> {{ selectedProduct.category }}</p>
+      <p><strong>Description:</strong> {{ selectedProduct.description }}</p>
+      <img [src]="selectedProduct.image" alt="{{ selectedProduct.title }}" />
+      <button class="close-button" (click)="closeModal()">Close</button>
+    </div>
+  </div>
+}
+
+  @if(edit){
+  <!-- Modal for editing product details -->
+  <div *ngIf="editingProduct" class="modal">
+    <div class="modal-content">
+      <h2>Edit Product</h2>
+      <form (ngSubmit)="saveEditedProduct()">
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input type="text" id="title" name="title" [(ngModel)]="editingProduct.title" required>
+        </div>
+        <div class="form-group">
+          <label for="price">Price:</label>
+          <input type="number" id="price" name="price" [(ngModel)]="editingProduct.price" required>
+        </div>
+        <div class="form-group">
+          <label for="category">Category:</label>
+          <input type="text" id="category" name="category" [(ngModel)]="editingProduct.category" required>
+        </div>
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea id="description" name="description" [(ngModel)]="editingProduct.description" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="image">Image URL:</label>
+          <input type="text" id="image" name="image" [(ngModel)]="editingProduct.image" required>
+        </div>
+        <button type="submit" class="save-button">Save Changes</button>
+        <button type="button" class="close-button" (click)="closeEditModal()">Cancel</button>
+      </form>
+    </div>
+  </div>
+}
 </body>
 </html>

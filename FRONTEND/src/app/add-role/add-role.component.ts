@@ -16,7 +16,7 @@ export class AddUserComponent implements OnInit {
   registrationForm: FormGroup;
   submitted: boolean = false;
   formstatus: string = '';
-  rolesData: string[] = [];
+  rolesData: any[] = [];
 
   constructor(private fb: FormBuilder, private httpService: HttpClientService, public router: Router) {
     this.registrationForm = this.fb.group({
@@ -30,9 +30,9 @@ export class AddUserComponent implements OnInit {
     if (token) {
       this.httpService.GetRequest('/add-role').then((data: any) => {
         if (data) {
-          this.rolesData = data.page;
-          this.loadPagePermissions();
+          this.rolesData = data.pages;
           console.log(this.rolesData);
+          this.loadPagePermissions();
         }
       });
     }
@@ -49,11 +49,12 @@ export class AddUserComponent implements OnInit {
   loadPagePermissions(): void {
     this.rolesData.forEach(page => {
       this.permissions.push(this.fb.group({
-        page: [page],
-        list: [false],
-        add: [false],
-        edit: [false],
-        view:[false]
+        page: [page.title],
+        list: [page.list.status],
+        add: [page.add.status],
+        edit: [page.edit.status],
+        view: [page.view.status],
+        delete: [page.delete.status]
       }));
     });
   }

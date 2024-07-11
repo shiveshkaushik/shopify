@@ -2,7 +2,9 @@ const register = require('../model/AuthModel');
 const log = require('../model/LogModel');
 const sesModel = require('../model/SessionModel');
 const pageModel = require('../model/PagePermissionModel');
+const perModel = require('../model/PermissionModel');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 const changedThePassword = require('../actions/activity');
 require('dotenv').config();
 const secret = process.env.JWT_SECRET;
@@ -14,8 +16,10 @@ const bucketRegion = process.env.BUCKET_REGION;
 const accessKey = process.env.ACCESS_KEY;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY;
 const sharp = require('sharp');
+const { prototype } = require('aws-sdk/clients/acm');
+const productModel = require('../model/ProductModel');
 
-let PageList = ['DashBoard', 'Product', 'Reports', 'Purchase', 'Role-Permission', 'User-Roles']
+let PageList = ['DashBoard', 'Products', 'Reports', 'Purchase', 'Role-Permission', 'User-Roles']
 
 const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10);
@@ -84,6 +88,12 @@ const PostLogin = async (req, res) => {
         const sessionofUser = await sesModel.create({ userId: existUserID, email: userEmail, token: token, createdAt: created, updatedAt: updated })
         const logofUser = await log.create({ userId: existUserID, email: userEmail, loginTime: loginTime, actions: [] });
         arrayofperms = [];
+        console.log(rolePerms)
+        rolePerms.permission.forEach(p => {
+            if(p.list.status){
+                arrayofperms.push({listperm:p.list,name:p.page})
+            }
+        })
         res.status(200).json({ token: token, email: userEmail, permissions: arrayofperms });
     } catch (error) {
         console.error("Error while finding user:", error);
@@ -136,13 +146,21 @@ const getDashboard = async (req, res) => {
         const token = authHeader && authHeader.split(' ')[1];
         const decodedToken = jwt.decode(token);
         const userRole = decodedToken.role;
-        let flag = false;
-        if (userRole == 'SuperAdmin') {
-            flag = true;
-        }
         const perms = await pageModel.findOne({ role: userRole });
         let result = false;
-        if (perms && perms.permission && result || flag === true) {
+
+        if (perms && perms.permission) {
+            let arrayPerms = perms.permission
+            arrayPerms.forEach(p => {
+                if(p.page == "Dashboard"){
+                    if(p.list.status){
+                        result = true
+                    }
+                }
+            })
+        }
+
+        if(result){
             const userEmail = decodedToken.email;
             const loggedUser = await register.findOne({ email: userEmail });
             if (loggedUser) {
@@ -384,7 +402,8 @@ const getNavbarPermission = async (req, res) => {
 
 const getAddRole = async (req, res) => {
     try {
-        res.status(200).send({ page: PageList });
+        const defaultPermssions = await perModel.find({});
+        res.status(200).send({pages:defaultPermssions})
     } catch (err) {
         console.log(err);
         res.status(500).send('Internal Server Error');
@@ -415,31 +434,39 @@ const addRole = async (req, res) => {
                     a = perm.add;
                     e = perm.edit;
                     v = perm.view;
+                    d = perm.delete;
+                    let mainUrl = main.toLowerCase()
                     let obj = {
                         page: main,
                         list: {
                             type: 'list',
                             title: 'List',
                             status: l,
-                            url: `/${main}/list`
+                            url: `/${mainUrl}`
                         },
                         add: {
                             type: 'add',
                             title: 'Add',
                             status: a,
-                            url: `/${main}/add`
+                            url: `/${mainUrl}/add`
                         },
                         edit: {
                             type: 'edit',
                             title: 'Edit',
                             status: e,
-                            url: `/${main}/edit`
+                            url: `/${mainUrl}/edit`
                         },
                         view: {
                             type: 'view',
                             title: 'View',
                             status: v,
-                            url: `/${main}/view`
+                            url: `/${mainUrl}/view`
+                        },
+                        delete: {
+                            type: 'delete',
+                            title: 'Delete',
+                            status: d,
+                            url: `/${mainUrl}/delete`
                         }
                     }
                     myperm.push(obj);
@@ -475,7 +502,7 @@ const getPermissionCheckBox = async (req, res) => {
             }
             else{
                 console.log(userRole);
-                const perms = await pageModel.findOne({role:userRole});
+                const perms = await pageModel.findOne({role:{ $ne: 'SuperAdmin' } });
                 perms.permission.forEach(p => {
                     if(p.page === 'Role-Permission'){
                         if(p.view.status){
@@ -487,7 +514,7 @@ const getPermissionCheckBox = async (req, res) => {
             }
             console.log(access);
             if(access){
-        const allPerms = await pageModel.find({});
+        const allPerms = await pageModel.find({role:{ $ne: 'SuperAdmin' }});
         res.status(200).send({ data: allPerms,perm:otherPerm,scontrol:superAdmin });
             }
             else{
@@ -683,7 +710,7 @@ const postAdminInfo = async (req, res) => {
 const getEditPagePermission = async (req, res) => {
     try {
         const perms = await pageModel.find({ role: { $ne: 'SuperAdmin' } });
-        res.status(200).send({ data: perms });
+        res.status(200).json({ data: perms });
     } catch (err) {
         console.log(err);
         res.status(500).send('Internal Server Error');
@@ -692,4 +719,85 @@ const getEditPagePermission = async (req, res) => {
 
 
 
-module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo, getEditPagePermission, getAddRole,permissionDelete,changeUserRole };
+
+//product
+const getProducts = async (req,res) => {
+    try{
+        const authHeader = req.headers && req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        const decodedToken = jwt.decode(token);
+        const userRole = decodedToken.role;
+        const perms = await pageModel.findOne({ role: userRole });
+        let result = false;
+        let allowedPerms;
+        if (perms && perms.permission) {
+            let arrayPerms = perms.permission
+            arrayPerms.forEach(p => {
+                if(p.page == "Products"){
+                    if(p.list.status){
+                        result = true
+                    }
+                    allowedPerms = {view:p.view.status,add:p.add.status,edit:p.edit.status,delete:p.delete.status}
+                }
+            })
+        }
+        if(result){
+        const products = await productModel.find({})
+        res.status(200).json({products:products,perms:allowedPerms})
+        }else{
+            res.status(401).send("Not Allowed")
+        }
+    }catch(err){
+        console.log(err)
+        res.status(500).send("Internal Error")
+    }
+}
+
+//addProduct Verify
+const verifyAddProduct = async(req,res) => {
+    try{
+        const authHeader = req.headers && req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        const decodedToken = jwt.decode(token);
+        const userRole = decodedToken.role;
+        const perms = await pageModel.findOne({ role: userRole });
+        let result = false;
+        let allowedPerms;
+        if (perms && perms.permission) {
+            let arrayPerms = perms.permission
+            arrayPerms.forEach(p => {
+                if(p.page == "Products"){
+                    if(p.add.status){
+                        result = true
+                    }
+                }
+            })
+        }
+        if(result)
+            {
+                return 
+            }
+            else{
+                res.status(401).send("Not Allowed")
+            }
+    }catch(err)
+    {
+        console.log(err)
+        res.send(500).send("Internal Server Error")
+    }
+}
+
+
+const productEdit = async(req,res) => {
+    try{
+        const newProd = req.body
+        await productModel.findOneAndReplace({_id:newProd._id},newProd)
+        res.status(200).send("Edited Successfully")
+    }catch(err){
+        console.log(err);
+        res.status(500).send("errror")
+    }
+}
+
+
+module.exports = { PostLogin, PostRegister, getDashboard, logout, changePassword, getAdminDetails, getNavbarPermission, addRole, getPermissionCheckBox, postPermissionCheckbox, getAdminInfo, postAdminInfo, getEditPagePermission, getAddRole,permissionDelete,changeUserRole,getProducts,verifyAddProduct,productEdit}

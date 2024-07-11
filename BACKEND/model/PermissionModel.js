@@ -1,15 +1,26 @@
 const mongoose = require('mongoose');
 const perModel  = new mongoose.Schema({
-    name:{
+    title:{
         type:String,
-        default:'no',
-        required:true,
     },
-    roleAccess:{
-        type:[String],
-        default:[],
-        required:true
+    icon:{
+        type:String,
     },
+    list:{
+        type:Object
+    },
+    add:{
+        type:Object
+    },
+    edit:{
+        type:Object
+    },
+    view:{
+        type:Object
+    },
+    delete:{
+        type:Object
+    }
 })
 
 const userPerModel = mongoose.model('permissions',perModel);

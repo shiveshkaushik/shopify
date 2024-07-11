@@ -84,5 +84,14 @@ export class HttpClientService {
     }
   }
 
+  jsonReq= async(url:string) =>{
+    try{
+      const response = await axios.get('https://fakestoreapi.com/products');
+      return response;
+    }catch(err:any){
+      console.log(err)
+    }
+  }
+
 
 }

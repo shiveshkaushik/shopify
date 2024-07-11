@@ -12,6 +12,7 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class NavbarComponent {
   userName: string = 'Username';
+  isSidebarOpen = true;
   flag: boolean = false;
   showDashboard: boolean = false;
   showProduct: boolean = false;
@@ -33,5 +34,19 @@ export class NavbarComponent {
       }
       console.log("perms-->", this.permissions)
     };
+  }
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      if (this.isSidebarOpen) {
+        sidebar.classList.remove('sidebar-hidden');
+        sidebar.classList.add('sidebar-responsive');
+      } else {
+        sidebar.classList.add('sidebar-hidden');
+        sidebar.classList.remove('sidebar-responsive');
+      }
+    }
   }
 }
